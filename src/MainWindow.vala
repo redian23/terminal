@@ -28,10 +28,6 @@ namespace Terminal {
         private Gtk.ToggleButton search_button;
         private Gtk.Button zoom_default_button;
 
-        private Gtk.ListStore liststore;
-        private Gtk.ComboBox combobox;  
-        private Gtk.CellRendererText cellrenderertext;
-
         private HashTable<string, TerminalWidget> restorable_terminals;
         private bool is_fullscreen = false;
         private string[] saved_tabs;
@@ -100,6 +96,14 @@ namespace Terminal {
             { ACTION_OPEN_IN_FILES, action_open_in_files },
             { ACTION_SCROLL_TO_LAST_COMMAND, action_scroll_to_last_command }
         };
+
+        private void click_handler (string BG, string FG, string CC, string PLT, bool dark = true) {
+            Application.settings.set_boolean ("prefer-dark-style", dark);
+            Application.settings.set_string ("background", BG);
+            Application.settings.set_string ("foreground", FG);
+            Application.settings.set_string ("cursor-color", CC);
+            Application.settings.set_string ("palette", PLT);
+        }
 
         public MainWindow (Terminal.Application app, bool recreate_tabs = true) {
             Object (
@@ -417,27 +421,82 @@ namespace Terminal {
 
             var color_button_dark = new Gtk.RadioButton.from_widget (color_button_white);
             color_button_dark.halign = Gtk.Align.CENTER;
-            color_button_dark.tooltip_text = _("Dark");
+            color_button_dark.tooltip_text = _("Solarized Dark");
 
             var color_button_dark_context = color_button_dark.get_style_context ();
             color_button_dark_context.add_class (Granite.STYLE_CLASS_COLOR_BUTTON);
             color_button_dark_context.add_class ("color-dark");
 
+            var color_button_black = new Gtk.RadioButton.from_widget (color_button_white);
+            color_button_black.halign = Gtk.Align.CENTER;
+            color_button_black.tooltip_text = _("Solarized Black");
+
+            var color_button_black_context = color_button_black.get_style_context ();
+            color_button_black_context.add_class (Granite.STYLE_CLASS_COLOR_BUTTON);
+            color_button_black_context.add_class ("color-black");
+
+            var color_button_pink = new Gtk.RadioButton.from_widget (color_button_white);
+            color_button_pink.halign = Gtk.Align.CENTER;
+            color_button_pink.tooltip_text = _("Pink");
+
+            var color_button_pink_context = color_button_pink.get_style_context ();
+            color_button_pink_context.add_class (Granite.STYLE_CLASS_COLOR_BUTTON);
+            color_button_pink_context.add_class ("color-pink");
+
+            var color_button_monokai_dark = new Gtk.RadioButton.from_widget (color_button_white);
+            color_button_monokai_dark.halign = Gtk.Align.CENTER;
+            color_button_monokai_dark.tooltip_text = _("Monokai Dark");
+
+            var color_button_monokai_dark_context = color_button_monokai_dark.get_style_context ();
+            color_button_monokai_dark_context.add_class (Granite.STYLE_CLASS_COLOR_BUTTON);
+            color_button_monokai_dark_context.add_class ("color-monokai_dark");
+
+            var color_button_dracula = new Gtk.RadioButton.from_widget (color_button_white);
+            color_button_dracula.halign = Gtk.Align.CENTER;
+            color_button_dracula.tooltip_text = _("Dracula");
+
+            var color_button_dracula_context = color_button_dracula.get_style_context ();
+            color_button_dracula_context.add_class (Granite.STYLE_CLASS_COLOR_BUTTON);
+            color_button_dracula_context.add_class ("color-dracula");
+
+            var color_button_silver = new Gtk.RadioButton.from_widget (color_button_white);
+            color_button_silver.halign = Gtk.Align.CENTER;
+            color_button_silver.tooltip_text = _("Silver");
+
+            var color_button_silver_context = color_button_silver.get_style_context ();
+            color_button_silver_context.add_class (Granite.STYLE_CLASS_COLOR_BUTTON);
+            color_button_silver_context.add_class ("color-silver");
+
+            var color_button_out_run = new Gtk.RadioButton.from_widget (color_button_white);
+            color_button_out_run.halign = Gtk.Align.CENTER;
+            color_button_out_run.tooltip_text = _("Out Run");
+
+            var color_button_out_run_context = color_button_out_run.get_style_context ();
+            color_button_out_run_context.add_class (Granite.STYLE_CLASS_COLOR_BUTTON);
+            color_button_out_run_context.add_class ("color-out_run");
+
+
             var color_grid = new Gtk.Grid ();
             color_grid.column_homogeneous = true;
             color_grid.margin_start = color_grid.margin_end = 12;
             color_grid.margin_bottom = 6;
-
-            color_grid.add (color_button_white);
-            color_grid.add (color_button_light);
-            color_grid.add (color_button_dark);
+            color_grid.column_spacing = color_grid.row_spacing = 10;
+            color_grid.width_request = 10;
+            color_grid.attach (color_button_white, 0, 1, 1, 1);
+            color_grid.attach (color_button_light, 1, 1, 1, 1);
+            color_grid.attach (color_button_dark, 2, 1, 1, 1);
+            color_grid.attach (color_button_black, 3, 1, 1, 1);
+            color_grid.attach (color_button_pink, 0, 2, 1, 1);
+            color_grid.attach (color_button_silver, 1, 2, 1, 1);
+            color_grid.attach (color_button_out_run, 2, 2, 1, 1);
+            color_grid.attach (color_button_dracula, 3, 2, 1, 1);
 
             var natural_copy_paste_label = new Gtk.Label (_("Natural Copy/Paste"));
             natural_copy_paste_label.halign = Gtk.Align.START;
             natural_copy_paste_label.vexpand = true;
 
             var natural_copy_paste_switch = new Gtk.Switch ();
-            natural_copy_paste_switch.valign = Gtk.Align.START;
+            natural_copy_paste_switch.valign = Gtk.Align.END;
 
             var natural_copy_paste_description = new Gtk.Label ("<small>%s</small>".printf (
                 _("Shortcuts don’t require Shift; may interfere with CLI apps")
@@ -451,33 +510,11 @@ namespace Terminal {
             var natural_copy_paste_revealer = new Gtk.Revealer ();
             natural_copy_paste_revealer.add (natural_copy_paste_description);
 
-            liststore = new Gtk.ListStore(1, typeof (string));
-            Gtk.TreeIter iter;
-    
-            liststore.append(out iter);
-            liststore.set(iter, 0, "Default", -1);
-            liststore.append(out iter);
-            liststore.set(iter, 0, "DRACULA", -1);
-            liststore.append(out iter);
-            liststore.set(iter, 0, "MONOKAI_DARK", -1);
-            liststore.append(out iter);
-            liststore.set(iter, 0, "SILVER", -1);
-            liststore.append(out iter);
-            liststore.set(iter, 0, "ROUT_RUN", -1);
-    
-            cellrenderertext = new Gtk.CellRendererText();
-    
-            combobox = new Gtk.ComboBox();
-            combobox.set_model(liststore);
-            combobox.pack_start(cellrenderertext, true);
-            combobox.add_attribute(cellrenderertext, "text", 0);
-
-            
             var natural_copy_paste_grid = new Gtk.Grid ();
             natural_copy_paste_grid.column_spacing = 12;
             natural_copy_paste_grid.attach (natural_copy_paste_label, 0, 0);
             natural_copy_paste_grid.attach (natural_copy_paste_revealer, 0, 1);
-            natural_copy_paste_grid.attach (natural_copy_paste_switch, 1, 0, 1, 2);
+            natural_copy_paste_grid.add (natural_copy_paste_switch);
 
             var natural_copy_paste_button = new Gtk.ModelButton ();
             natural_copy_paste_button.get_child ().destroy ();
@@ -494,7 +531,7 @@ namespace Terminal {
             menu_popover_grid.add (color_grid);
             menu_popover_grid.add (new Gtk.Separator (Gtk.Orientation.HORIZONTAL));
             menu_popover_grid.add (natural_copy_paste_button);
-            menu_popover_grid.add (combobox);
+
 
             menu_popover_grid.show_all ();
 
@@ -559,6 +596,7 @@ namespace Terminal {
                 current_terminal.grab_focus ();
             });
 
+
             switch (Application.settings.get_string ("background")) {
                 case HIGH_CONTRAST_BG:
                     color_button_white.active = true;
@@ -566,29 +604,60 @@ namespace Terminal {
                 case SOLARIZED_LIGHT_BG:
                     color_button_light.active = true;
                     break;
-                case DARK_BG:
+                case SOLARIZED_DARK_BG:
                     color_button_dark.active = true;
+                    break;
+                case SOLARIZED_BLACK_BG:
+                    color_button_black.active = true;
+                    break;
+                case PINK_BG:
+                    color_button_pink.active = true;
+                    break;
+                case MONOKAI_DARK_BG:
+                    color_button_monokai_dark.active = true;
+                    break;
+                case DRACULA_BG:
+                    color_button_dracula.active = true;
+                    break;
+                case SILVER_BG:
+                    color_button_silver.active = true;
+                    break;
+                case OUT_RUN_BG:
+                    color_button_out_run.active = true;
                     break;
             }
 
-            color_button_dark.clicked.connect (() => {
-                Application.settings.set_boolean ("prefer-dark-style", true);
-                Application.settings.set_string ("background", DARK_BG);
-                Application.settings.set_string ("foreground", DARK_FG);
-            });
-
             color_button_light.clicked.connect (() => {
-                Application.settings.set_boolean ("prefer-dark-style", false);
-                Application.settings.set_string ("background", SOLARIZED_LIGHT_BG);
-                Application.settings.set_string ("foreground", SOLARIZED_LIGHT_FG);
+                click_handler (SOLARIZED_LIGHT_BG, SOLARIZED_LIGHT_FG, DEFAULT_CC, PALETTE_DEFAULT, false);
             });
 
             color_button_white.clicked.connect (() => {
-                Application.settings.set_boolean ("prefer-dark-style", false);
-                Application.settings.set_string ("background", HIGH_CONTRAST_BG);
-                Application.settings.set_string ("foreground", HIGH_CONTRAST_FG);
+                click_handler (HIGH_CONTRAST_BG, HIGH_CONTRAST_FG, DEFAULT_CC, PALETTE_DEFAULT, false);
             });
 
+             color_button_pink.clicked.connect (() => {
+                click_handler (PINK_BG, PINK_FG, PINK_CC, PALETTE_DEFAULT, false);
+            });
+
+            color_button_silver.clicked.connect (() => {
+                click_handler (SILVER_BG, SILVER_FG, DEFAULT_CC, PALETTE_SILVER, false);
+            });
+
+            color_button_dark.clicked.connect (() => {
+                click_handler (DARK_BG, DARK_FG, DEFAULT_CC, PALETTE_DEFAULT, true);
+            });
+
+            color_button_dracula.clicked.connect (() => {
+                click_handler (DRACULA_BG, DRACULA_FG, DEFAULT_CC, PALETTE_DRACULA, true);
+            });
+
+            color_button_black.clicked.connect (() => {
+                click_handler (SOLARIZED_BLACK_BG, SOLARIZED_BLACK_FG, DEFAULT_CC, PALETTE_DRACULA, true);
+            });
+
+            color_button_out_run.clicked.connect (() => {
+                click_handler (OUT_RUN_BG, OUT_RUN_FG, OUT_RUN_CC, PALETTE_OUT_RUN, true);
+            });
            /*  switch (Application.settings.get_string ("palette")) {
                 case PALETTE_DEFAULT:
                     color_palette_default.active = true;
