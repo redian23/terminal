@@ -1,5 +1,5 @@
 /*
-* Copyright 2017-2020 elementary, Inc. (https://elementary.io)
+* Copyright (c) 2017 elementary LLC. (https://elementary.io)
 *
 * This program is free software; you can redistribute it and/or
 * modify it under the terms of the GNU Lesser General Public
@@ -26,26 +26,78 @@
 }
 
 vte-terminal {
-    padding: 0 9px;
+    padding-left: 2px;
+    padding-right: 2px;
 }
 
 .color-button radio,
 .color-button radio:checked {
-   padding: 10px;
-   -gtk-icon-shadow: none;
+    border-color: alpha (#000, 0.3);
+    box-shadow:
+        inset 0 1px 0 0 alpha (@inset_dark_color, 0.7),
+        inset 0 0 0 1px alpha (@inset_dark_color, 0.3),
+        0 1px 0 0 alpha (@bg_highlight_color, 0.3);
+    padding: 10px;
+    -gtk-icon-shadow: none;
+}
+
+.color-button radio:focus {
+    border-color: @colorAccent;
+    box-shadow:
+        inset 0 1px 0 0 alpha (@inset_dark_color, 0.7),
+        inset 0 0 0 1px alpha (@inset_dark_color, 0.3),
+        inset 0 0 0 1px alpha (@bg_highlight_color, 0.05),
+        0 1px 0 0 alpha (@bg_highlight_color, 0.3),
+        0 0 0 1px alpha (@colorAccent, 0.25);
+}
+
+
+.color-out_run radio {
+    background: linear-gradient(0deg, rgba(170,7,166,1) 0%, rgba(0,60,138,1) 100%);
+    color: #fff;
+}
+
+.color-silver radio {
+    background: #C2C2C2;
+    color: #fff;
+}
+
+.color-dracula radio {
+    background: #282A36;
+    border-color: #1A1E2D;
+    color: #fff;
+}
+
+.color-monokai_dark radio {
+    background: #272822;
+    border-color: #1C1C1C;
+    color: #fff;
+}
+
+.color-pink radio {
+    background: #FFC3EF;
+    border-color: #FF9EE5;
+    color: #fff;
+}
+
+.color-black radio {
+    background: #1a1a1a;
+    border-color: #151B1C;
+    color: #fff;
 }
 
 .color-dark radio {
-    background-color: rgb(46, 46, 46);
-    color: #a5a5a5;
+    background: #252E32;
+    border-color: #151B1C;
+    color: #fff;
 }
 
 .color-light radio {
-    background-color: #fdf6e3;
-    color: #586e75;
+    background: #fdf6e3;
+    color: #4d4d4d;
 }
 
 .color-white radio {
-    background-color: #fff;
+    background: #fff;
     color: #000;
 }

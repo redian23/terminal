@@ -15,6 +15,7 @@
 * Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 * Boston, MA 02110-1301 USA
 */
+using Terminal.Themes;
 
 namespace Terminal {
     public class MainWindow : Hdy.Window {
@@ -27,6 +28,10 @@ namespace Terminal {
         private Gtk.ToggleButton search_button;
         private Gtk.Button zoom_default_button;
 
+        private Gtk.ListStore liststore;
+        private Gtk.ComboBox combobox;  
+        private Gtk.CellRendererText cellrenderertext;
+
         private HashTable<string, TerminalWidget> restorable_terminals;
         private bool is_fullscreen = false;
         private string[] saved_tabs;
@@ -34,13 +39,6 @@ namespace Terminal {
         private const int NORMAL = 0;
         private const int MAXIMIZED = 1;
         private const int FULLSCREEN = 2;
-
-        private const string HIGH_CONTRAST_BG = "#fff";
-        private const string HIGH_CONTRAST_FG = "#333";
-        private const string DARK_BG = "rgba(46, 46, 46, 0.95)";
-        private const string DARK_FG = "#a5a5a5";
-        private const string SOLARIZED_LIGHT_BG = "rgba(253, 246, 227, 0.95)";
-        private const string SOLARIZED_LIGHT_FG = "#586e75";
 
         public bool unsafe_ignored;
         public bool focus_restored_tabs { get; construct; default = true; }
@@ -453,6 +451,28 @@ namespace Terminal {
             var natural_copy_paste_revealer = new Gtk.Revealer ();
             natural_copy_paste_revealer.add (natural_copy_paste_description);
 
+            liststore = new Gtk.ListStore(1, typeof (string));
+            Gtk.TreeIter iter;
+    
+            liststore.append(out iter);
+            liststore.set(iter, 0, "Default", -1);
+            liststore.append(out iter);
+            liststore.set(iter, 0, "DRACULA", -1);
+            liststore.append(out iter);
+            liststore.set(iter, 0, "MONOKAI_DARK", -1);
+            liststore.append(out iter);
+            liststore.set(iter, 0, "SILVER", -1);
+            liststore.append(out iter);
+            liststore.set(iter, 0, "ROUT_RUN", -1);
+    
+            cellrenderertext = new Gtk.CellRendererText();
+    
+            combobox = new Gtk.ComboBox();
+            combobox.set_model(liststore);
+            combobox.pack_start(cellrenderertext, true);
+            combobox.add_attribute(cellrenderertext, "text", 0);
+
+            
             var natural_copy_paste_grid = new Gtk.Grid ();
             natural_copy_paste_grid.column_spacing = 12;
             natural_copy_paste_grid.attach (natural_copy_paste_label, 0, 0);
@@ -474,6 +494,7 @@ namespace Terminal {
             menu_popover_grid.add (color_grid);
             menu_popover_grid.add (new Gtk.Separator (Gtk.Orientation.HORIZONTAL));
             menu_popover_grid.add (natural_copy_paste_button);
+            menu_popover_grid.add (combobox);
 
             menu_popover_grid.show_all ();
 
@@ -567,6 +588,25 @@ namespace Terminal {
                 Application.settings.set_string ("background", HIGH_CONTRAST_BG);
                 Application.settings.set_string ("foreground", HIGH_CONTRAST_FG);
             });
+
+           /*  switch (Application.settings.get_string ("palette")) {
+                case PALETTE_DEFAULT:
+                    color_palette_default.active = true;
+                    break;
+                case SOLARIZED_LIGHT_BG:
+                    color_palette_SL.active = true;
+                    break;
+                case DARK_BG:
+                    color_palette_DR.active = true;
+                    break;
+            }
+
+            color_palette_default.clicked.connect (() => {
+                Application.settings.set_boolean ("prefer-dark-style", false);
+                Application.settings.set_string ("palette", PALETTE_DEFAULT);
+
+            });
+*/
 
             natural_copy_paste_button.button_release_event.connect (() => {
                 natural_copy_paste_switch.activate ();
